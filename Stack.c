@@ -17,6 +17,14 @@ static int isStack(Stack* this) {
     return (this->token == TOKEN);
 }
 
+static int hasRoom(Stack* this) {
+    return (this->data + this->itemSize)) >= this->end;
+}
+
+static int hasItems(Stack* this) {
+    return (this->data - this->itemSize) <= this->beg;
+}
+
 Stack* Stack_Create(size_t count, size_t itemSize) {
     Stack* this    = calloc(1, sizeof(Stack));
     this->data     = calloc(1, count * itemSize);
@@ -32,7 +40,7 @@ Stack_Result Stack_Push(Stack* this, void* src) {
         return STACK_UNRECOGNIZED;
     }
 
-    if((this->data + this->itemSize) >= this->end) {
+    if(!hasRoom(this)) {
         return STACK_FULL;
     }
 
@@ -46,7 +54,7 @@ Stack_Result Stack_Pop(Stack* this, void* dest) {
         return STACK_UNRECOGNIZED;
     }
 
-    if(isStack(this) && (this->data - this->itemSize) <= this->beg) {
+    if(!hasItems(this)) {
         return STACK_EMPTY;
     }
 
@@ -56,10 +64,11 @@ Stack_Result Stack_Pop(Stack* this, void* dest) {
 }
 
 Stack_Result Stack_Destroy(Stack* this) {
-    if(isStack(this)) {
-        free(this->data);
-        free(this);
-        return STACK_SUCCESS;
+    if(!isStack(this)) {
+        return STACK_UNRECOGNIZED;
     }
-    return STACK_UNRECOGNIZED;
+    
+    free(this->data);
+    free(this);
+    return STACK_SUCCESS;
 }
